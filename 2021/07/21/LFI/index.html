@@ -11,7 +11,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1"
       />
-      <title> Blog of ZC</title>
+      <title>LFI |  Blog of ZC</title>
   <meta name="generator" content="hexo-theme-ayer">
       
       <link rel="shortcut icon" href="/images/p.png" />
@@ -61,6 +61,16 @@
   data-scroll-reveal
 >
   <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  LFI
+</h1>
+ 
+
+      
+    </header>
      
     <div class="article-meta">
       <a href="/2021/07/21/LFI/" class="article-date">
@@ -100,32 +110,14 @@
     <div class="article-entry" itemprop="articleBody">
        
   <h1 id="LFI文件包含漏洞"><a href="#LFI文件包含漏洞" class="headerlink" title="LFI文件包含漏洞"></a>LFI文件包含漏洞</h1><span id="more"></span>
-<h2 id="远程文件包含getshell"><a href="#远程文件包含getshell" class="headerlink" title="远程文件包含getshell"></a>远程文件包含getshell</h2><h3 id="一-直接包含"><a href="#一-直接包含" class="headerlink" title="一.直接包含"></a>一.直接包含</h3><p><img src="/./2021/07/21/LFI/q.jpg"><br><img src="/2021/07/21/LFI/q.jpg"></p>
+<h2 id="远程文件包含getshell"><a href="#远程文件包含getshell" class="headerlink" title="远程文件包含getshell"></a>远程文件包含getshell</h2><h3 id="一-直接包含"><a href="#一-直接包含" class="headerlink" title="一.直接包含"></a>一.直接包含</h3><p><img src="/2021/07/21/LFI/q.png" alt="LFI关卡" title="瞅我干啥"></p>
  
       <!-- reward -->
-      
-      <div id="reword-out">
-        <div id="reward-btn">
-          Donate
-        </div>
-      </div>
       
     </div>
     
 
     <!-- copyright -->
-    
-    <div class="declare">
-      <ul class="post-copyright">
-        <li>
-          <i class="ri-copyright-line"></i>
-          <strong>Copyright： </strong>
-          
-          Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source.
-          
-        </li>
-      </ul>
-    </div>
     
     <footer class="article-footer">
        
@@ -145,55 +137,7 @@
     
   </nav>
 
-   
-<!-- valine评论 -->
-<div id="vcomments-box">
-  <div id="vcomments"></div>
-</div>
-<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js"></script>
-<script>
-  new Valine({
-    el: "#vcomments",
-    app_id: "",
-    app_key: "",
-    path: window.location.pathname,
-    avatar: "monsterid",
-    placeholder: "给我的文章加点评论吧~",
-    recordIP: true,
-  });
-  const infoEle = document.querySelector("#vcomments .info");
-  if (infoEle && infoEle.childNodes && infoEle.childNodes.length > 0) {
-    infoEle.childNodes.forEach(function (item) {
-      item.parentNode.removeChild(item);
-    });
-  }
-</script>
-<style>
-  #vcomments-box {
-    padding: 5px 30px;
-  }
-
-  @media screen and (max-width: 800px) {
-    #vcomments-box {
-      padding: 5px 0px;
-    }
-  }
-
-  #vcomments-box #vcomments {
-    background-color: #fff;
-  }
-
-  .v .vlist .vcard .vh {
-    padding-right: 20px;
-  }
-
-  .v .vlist .vcard {
-    padding-left: 10px;
-  }
-</style>
-
- 
+  
    
      
 </article>
@@ -277,7 +221,7 @@
     </li>
     
     <li class="nav-item">
-      <a class="nav-item-link" href="/categories/HELLO">分类</a>
+      <a class="nav-item-link" href="/categories/">分类</a>
     </li>
     
     <li class="nav-item">
@@ -289,7 +233,7 @@
     </li>
     
     <li class="nav-item">
-      <a class="nav-item-link" href="/friends">友链</a>
+      <a class="nav-item-link" href="/links/">友链</a>
     </li>
     
     <li class="nav-item">
